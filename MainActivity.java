@@ -44,7 +44,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements AdapterView.OnItemClickListener{
 
 	ListView listCollege;
 	ProgressBar proCollageList;
@@ -64,11 +64,28 @@ public class MainActivity extends Activity {
 		listCollege = (ListView)findViewById(R.id.listCollege);
 		proCollageList = (ProgressBar)findViewById(R.id.proCollageList);
 
-		
+		listCollege.setOnItemClickListener(this);
 		new GetHttpResponse(this).execute();
 	}
 
-	
+	@Override
+	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        String txtGroupid = (String) ((TextView) view.findViewById(R.id.adapter_text_title)).getText();
+        Toast.makeText(getApplicationContext(), txtGroupid, Toast.LENGTH_LONG).show();
+        if (btnset.equals( "btnSettle")) {
+            Intent in = new Intent(MainActivity.this, BillActivity.class);
+            in.putExtra("username", i);
+            in.putExtra("passgroupid", txtGroupid);
+			Toast.makeText(getApplicationContext(), btnset, Toast.LENGTH_LONG).show();
+            startActivity(in);
+        } if(btnset.equals("btnBill")){
+            Intent in = new Intent(MainActivity.this, BillCreation.class);
+            in.putExtra("username", i);
+            in.putExtra("passgroupid", txtGroupid);
+			Toast.makeText(getApplicationContext(), btnset, Toast.LENGTH_LONG).show();
+            startActivity(in);
+        }
+    }
 
 	private class GetHttpResponse extends AsyncTask<Void, Void, Void>
 	{
@@ -278,7 +295,105 @@ public class MainActivity extends Activity {
 			}
 		}
 
-		
+		private String convertStreamToString(InputStream is)
+		{
+			BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+			StringBuilder sb = new StringBuilder();
+
+			String line = null;
+			try 
+			{
+				while ((line = reader.readLine()) != null) 
+				{
+					sb.append(line + "\n");
+				}
+			} 
+			catch (IOException e) 
+			{
+				e.printStackTrace();
+			}
+			finally 
+			{
+				try 
+				{
+					is.close();
+				} 
+				catch (IOException e) 
+				{
+					e.printStackTrace();
+				}
+			}
+			return sb.toString();
+		}
+	}
+	public class ListAdapter extends BaseAdapter
+	{
+		Context context;
+
+		List<cources> valueList;
+		public ListAdapter(List<cources> listValue, Context context)
+		{
+			this.context = context;
+			this.valueList = listValue;
+		}
+
+		@Override
+		public int getCount()
+		{
+			return this.valueList.size();
+		}
+
+		@Override
+		public Object getItem(int position)
+		{
+			return this.valueList.get(position);
+		}
+
+		@Override
+		public long getItemId(int position)
+		{
+			return position;
+		}
+
+		@Override
+		public View getView(int position, View convertView, ViewGroup parent)
+		{
+			ViewItem viewItem = null;
+			if(convertView == null)
+			{
+				viewItem = new ViewItem();
+				LayoutInflater layoutInfiater = (LayoutInflater)this.context.getSystemService(Activity.LAYOUT_INFLATER_SERVICE);
+				//LayoutInflater layoutInfiater = LayoutInflater.from(context);
+				convertView = layoutInfiater.inflate(R.layout.list_adapter_view, null);
+
+				viewItem.txtTitle = (TextView)convertView.findViewById(R.id.adapter_text_title);
+				viewItem.txtDescription = (TextView)convertView.findViewById(R.id.adapter_text_description);
+
+				convertView.setTag(viewItem);
+
+			}
+			else
+			{
+				viewItem = (ViewItem) convertView.getTag();
+			}
+
+			viewItem.txtTitle.setText(valueList.get(position).groupid);
+			viewItem.txtDescription.setText(valueList.get(position).groupname);
+			return convertView;
+		}
+	}
+
+	class ViewItem
+	{
+		TextView txtTitle;
+		TextView txtDescription;
+	}
+	public class cources
+	{
+		public String groupid;
+		public String groupname;
+
+	}
 
 
 }
